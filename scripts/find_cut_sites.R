@@ -11,74 +11,56 @@ library(rtracklayer)    # Provides import() and export()
 
 # wget https://ftp.ncbi.nlm.nih.gov/genomes/all/GCA/003/704/035/GCA_003704035.3_HU_Pman_2.1.3/GCA_003704035.3_HU_Pman_2.1.3_genomic.fna.gz
 
-# sbf1 <- "CCTGCAGG"
-# msei <- "TTAA"
+sbf1 <- "CCTGCAGG"
+msei <- "TTAA"
+
+ecoR1 <- "GAATTC"
+
 
 # read in reference genome 
-seqs <- readDNAStringSet("../genome/GCA_004348285.1_ASM434828v1_genomic.fna")
+seqs <- readDNAStringSet("../genome/GCA_003704035.3_HU_Pman_2.1.3_genomic.fna.gz")
 
-# find sbf1 sites
-mp <- vmatchPattern("CCTGCAGG",seqs)
+# get contig lengths
+clen <- sapply(seqs,length)
 
-# make it a GRanges object
-mp2 <- as(mp, "GRanges")
+# get total genome length
+glen <- sum(clen)
 
-# make it a data frame
-mp3 <- as.data.frame(mp2)
-mp3[,1] <- str_replace(mp3[,1],regex(" .*"),"")
+# ignore small contigs
+	# genome is 2.43gb (not what NCBI says though...)
+seqs <- seqs[clen > 1e6]
+clen <- clen[clen > 1e6]
 
-# 0-index start
-mp3[,2] <- mp3[,2] - 1
-
-# left flank
-left <- mp3
-	left[,2] <- left[,2] - 9
-	left[,3] <- left[,3] - 9
-left[left[,2] < 0,2] <- 0
-
-# right flank
-right <- mp3
-	right[,2] <- right[,2] + 9
-	right[,3] <- right[,3] + 9
-
-# find sbf1 1-off sites
-mp_1 <- vmatchPattern("CCTGCAGG",seqs,max.mismatch=1)
-
-# make it a GRanges object
-mp2_1 <- as(mp_1, "GRanges")
-
-# make it a data frame
-mp3_1 <- as.data.frame(mp2_1)
-mp3_1[,1] <- str_replace(mp3_1[,1],regex(" .*"),"")
-
-# 0-index start
-mp3_1[,2] <- mp3_1[,2] - 1
-
-
-# write tables
-write.table(mp3[,1:3],"../meta/sbf1.bed",sep="\t",row.names=FALSE,col.names=FALSE,quote=FALSE)
-write.table(mp3_1[,1:3],"../meta/sbf1_off.bed",sep="\t",row.names=FALSE,col.names=FALSE,quote=FALSE)
-
-
-# find the distances from sbf1 to mseI cut sites
-
-# mseI: TTAA
+# find sbf1 sites and make a GRanges object
+rc <- vmatchPattern(ecoR1,seqs)
+rc2 <- as(rc, "GRanges")
 
 # find msei sites and get granges object
-msei <- vmatchPattern("TTAA",seqs)
-msei2 <- as(msei, "GRanges")
+fc <- vmatchPattern(msei,seqs)
+fc2 <- as(fc, "GRanges")
 
 # get closest upstream and downstream msei cut sites to sbf1 cut sites
-rightind <- precede(mp2,msei2,"first")
+rightind <- precede(rc2,fc2,"first")
 	NOrightNA <- !is.na(rightind)
-leftind <- follow(mp2,msei2,"last")
+leftind <- follow(rc2,fc2,"last")
 	NOleftNA <- !is.na(leftind)
 
-out <- matrix(nrow=length(mp2),ncol=2)
+out <- matrix(nrow=length(rc2),ncol=2)
 
-out[NOrightNA,1] <- distance(mp2[NOrightNA,],msei2[rightind[NOrightNA],])
-out[NOleftNA,2] <- distance(mp2[NOleftNA,],msei2[leftind[NOleftNA],])
+out[NOrightNA,1] <- distance(rc2[NOrightNA,],fc2[rightind[NOrightNA],])
+out[NOleftNA,2] <- distance(rc2[NOleftNA,],fc2[leftind[NOleftNA],])
 
 # `out` now contains all SbfI-MseI RAD fragment lengths in the reference genome. 
 	# column 1 is the left side of SbfI, column 2 is the right. 
-	
+
+# get number of RAD sites with a given 
+nsites <- (as.numeric(rowSums(out > 250 & out < 350) > 0) %>% table())[2]
+
+# RAD site frequency:
+glen/nsites
+
+
+
+
+
+
