@@ -17,10 +17,10 @@ echo This is array task number $SLURM_ARRAY_TASK_ID
 module load stacks/2.53
 
 #input/output directories, supplementary files
-INDIR=../results/dedup
+INDIR=../rawdata
 
-FQ1ARRAY=($(ls -1 $INDIR/Davis*R1*fq.gz))
-FQ2ARRAY=($(ls -1 $INDIR/Davis*R2*fq.gz))
+FQ1ARRAY=($(ls -1 $INDIR/Davis*R1*fastq.gz))
+FQ2ARRAY=($(ls -1 $INDIR/Davis*R2*fastq.gz))
 BARCODES=($(ls -1 ../meta/*barcode*))
 
 # make demultiplexed directory if it doesn't exist
@@ -41,7 +41,6 @@ process_radtags \
 -i gzfastq \
 -y gzfastq \
 -e nsiI \
---renz-2 mspI \
 -c \
 -q \
 -s 20 \
