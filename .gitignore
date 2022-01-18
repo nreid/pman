@@ -1,4 +1,5 @@
 **/data
+**/rawdata
 **/results
 *.out
 *.err
