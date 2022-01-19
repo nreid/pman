@@ -33,7 +33,7 @@ gunzip $GENOMEDIR/GCA_003704035.3_HU_Pman_2.1.3_genomic.fna.gz
 # index the genome using bwa
 module load bwa/0.7.17
 bwa index \
--p $GENOMEDIR/grayling \
+-p $GENOMEDIR/pman \
 $GENOMEDIR/GCA_003704035.3_HU_Pman_2.1.3_genomic.fna
 
 # index the genome using samtools
