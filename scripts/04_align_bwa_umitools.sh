@@ -38,8 +38,8 @@ SID=$(echo $FQ1 | sed 's/.1.fq.gz//' | sed 's_.*\/__')
 BAM=${SID}.bam
 
 # named pipes for this task to redirect umi-tagged fastqs
-P1=$OUTDIR/$SID
-P2=$OUTDIR/$SID
+P1=$OUTDIR/${SID}.1
+P2=$OUTDIR/${SID}.2
 
 mkfifo $P1
 mkfifo $P2
