@@ -57,8 +57,7 @@ ref_map.pl \
 # stacks doesn't include a sequence dictionary in the header.
 # this is required by some tools. add it using gatk. 
 
-ALIGNDIR=../results/aligned
-BAMDICT=../results/aligned/Golden1A06.bam
+BAMDICT=../results/aligned_ddRAD/42101_Small.bam
 
 gatk UpdateVCFSequenceDictionary \
      -V $OUTDIR/populations.snps.vcf \

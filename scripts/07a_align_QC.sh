@@ -25,7 +25,7 @@ module load parallel/20180122
 
 # input, output directories--------------------------------------------------------------
 
-INDIR=../results/aligned_ddRAD
+INDIR=../results/aligned_tempddRAD
 OUTDIR=../results/align_stats
 mkdir -p $OUTDIR
 
@@ -35,24 +35,24 @@ mkdir -p $OUTDIR
 for file in $(find $INDIR -name "*bam"); 
 do 
 SAM=$(basename $file .bam)
-echo "samtools stats $file >$OUTDIR/${SAM}.stats"
+echo "samtools stats $file >$OUTDIR/${SAM}.raw.stats"
 done | \
 parallel -j 15
 
 
 # put the basic stats all in one file.---------------------------------------------------
-FILES=($(find $OUTDIR -name "*.stats" | sort))
+FILES=($(find $OUTDIR -name "*.raw.stats" | sort))
 
-grep "^SN" ${FILES[0]} | cut -f 2 > $OUTDIR/SN.txt
+grep "^SN" ${FILES[0]} | cut -f 2 > $OUTDIR/SN.raw.txt
 for file in ${FILES[@]}
-do paste $OUTDIR/SN.txt <(grep ^SN $file | cut -f 3) > $OUTDIR/SN2.txt && \
-	mv $OUTDIR/SN2.txt $OUTDIR/SN.txt
+do paste $OUTDIR/SN.raw.txt <(grep ^SN $file | cut -f 3) > $OUTDIR/SN2.raw.txt && \
+	mv $OUTDIR/SN2.raw.txt $OUTDIR/SN.raw.txt
 	echo $file
 done
 
 # add a header with sample names
 cat \
 <(echo ${FILES[@]} | sed 's,../results/align_stats/,,g' | sed 's/.stats//g' | sed 's/ /\t/g') \
-$OUTDIR/SN.txt \
->$OUTDIR/SN2.txt && \
-	mv $OUTDIR/SN2.txt $OUTDIR/SN.txt
+$OUTDIR/SN.raw.txt \
+>$OUTDIR/SN2.raw.txt && \
+	mv $OUTDIR/SN2.raw.txt $OUTDIR/SN.raw.txt
