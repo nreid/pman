@@ -44,10 +44,13 @@ cat $POPMAP | cut -f 1 | sed 's/$/.bam/' | sed  "s,^,$INDIR," >$BAMLIST
 # these are freebayes scripts found in the same location as the executable
 MAKEREGIONS=/isg/shared/apps/freebayes/1.3.1/scripts/fasta_generate_regions.py
 
+REG=$OUTDIR/regions.txt
+python $MAKEREGIONS ${GEN}.fai 5000000 >$REG
+
 # run freebayes-parallel--------------------------------------------------------
 
 bash freebayes_parallel.sh \
-	<(python $MAKEREGIONS ${GEN}.fai 5000000) 30 \
+	$REG 30 \
 	-f ${GEN} \
 	--bam-list $BAMLIST \
 	-m 30 \

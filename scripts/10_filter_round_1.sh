@@ -28,8 +28,12 @@ module load vcflib/1.0.0-rc1
 # set input, output directories
 ###############################
 
-OUTDIR=../results/stacks
+STACKS=../results/stacks
 mkdir -p $OUTDIR
+
+FB=../results/freebayes
+mkdir -p $OUTDIR
+
 
 #############################
 # filter SITES by missingness
@@ -37,19 +41,32 @@ mkdir -p $OUTDIR
 
 # also remove multiallelic sites and indels
 
-vcftools --gzvcf $OUTDIR/populations.snps.dict.vcf.gz \
+# stacks
+vcftools --gzvcf $STACKS/populations.snps.dict.vcf.gz \
 	--max-missing-count 10 --mac 3 --remove-indels --max-alleles 2 --min-alleles 2 \
 	--recode \
 	--stdout | \
-	bgzip >$OUTDIR/filtered.vcf.gz
+	bgzip >$STACKS/filtered.vcf.gz
 
 	# output missing individual report
-	vcftools --gzvcf $OUTDIR/filtered.vcf.gz --out $OUTDIR/filtered --missing-indv
+	vcftools --gzvcf $STACKS/filtered.vcf.gz --out $STACKS/filtered --missing-indv
 
-##############
-# make indexes
-##############
+	# index
+	tabix -p vcf $STACKS/filtered.vcf.gz
 
-for file in $OUTDIR/*vcf.gz
-do tabix -f -p vcf $file
-done
+# freebayes
+GEN=../genome/GCA_003704035.3_HU_Pman_2.1.3_genomic.fna
+bcftools norm -f $GEN $FB/freebayes.vcf.gz | \
+	vcfallelicprimitives --keep-info --keep-geno | \
+	vcfstreamsort | \
+	vcftools --vcf - \
+	--max-missing-count 10 --mac 3 --remove-indels --max-alleles 2 --min-alleles 2 --minQ 30 \
+	--recode \
+	--stdout | bgzip >$FB/fb_filtered.vcf.gz
+
+	# output missing individual report
+	vcftools --gzvcf $FB/fb_filtered.vcf.gz --out $FB/fb_filtered --missing-indv
+
+	# index
+	tabix -p vcf $FB/fb_filtered.vcf.gz
+
